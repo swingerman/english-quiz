@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marlins English Practice Test</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Lato:wght@400;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Lato', 'Segoe UI', sans-serif;
+    background: #f0f4f8;
+    color: #1a2a3a;
+    min-height: 100vh;
+  }
+  button { font-family: inherit; }
+  button:hover { opacity: 0.88; }
+  button:disabled { opacity: 0.45; cursor: default; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+const CATEGORIES = [
+  { id: "grammar", label: "Grammar", icon: "✎", count: 30 },
+  { id: "vocabulary", label: "Maritime Vocabulary", icon: "⚓", count: 15 },
+  { id: "listening", label: "Comprehension", icon: "◉", count: 15 },
+  { id: "pronunciation", label: "Sounds & Pronunciation", icon: "🔊", count: 9 },
+  { id: "reading", label: "Reading", icon: "📄", count: 6 },
+  { id: "time", label: "Time & Numbers", icon: "⏱", count: 10 },
+];
+
+const ALL_QUESTIONS = {
+  grammar: [
+    { q: "The vessel _____ port at 0600 hours tomorrow.", options: ["leaves", "leave", "leaving", "is leave"], answer: 0 },
+    { q: "If the engine _____ down, we must alert the bridge immediately.", options: ["break", "breaks", "broken", "breaking"], answer: 1 },
+    { q: "The cargo _____ been secured before departure.", options: ["have", "has", "is", "are"], answer: 1 },
+    { q: "Neither the captain nor the officers _____ aware of the fault.", options: ["was", "is", "were", "has been"], answer: 2 },
+    { q: "The lifeboat drill _____ carried out every week.", options: ["is", "are", "have", "were"], answer: 0 },
+    { q: "All crew members must report _____ the muster station.", options: ["in", "at", "to", "on"], answer: 2 },
+    { q: "The pilot _____ on board since 0400.", options: ["is", "has been", "was", "have been"], answer: 1 },
+    { q: "She asked me where the fire extinguisher _____.", options: ["is", "was", "were", "been"], answer: 1 },
+    { q: "The ship _____ in heavy weather for three days now.", options: ["has been sailing", "sailed", "sails", "is sail"], answer: 0 },
+    { q: "You _____ wear a hard hat in the engine room at all times.", options: ["can", "might", "must", "would"], answer: 2 },
+    { q: "The anchor _____ at 1430 yesterday.", options: ["was dropped", "is dropped", "drops", "has dropped"], answer: 0 },
+    { q: "He told me that the weather _____ improve.", options: ["will", "would", "shall", "is"], answer: 1 },
+    { q: "_____ you finished the safety checklist yet?", options: ["Did", "Have", "Do", "Are"], answer: 1 },
+    { q: "The crew were instructed _____ the deck.", options: ["clean", "cleaning", "to clean", "cleaned"], answer: 2 },
+    { q: "If I _____ the captain, I would change course.", options: ["am", "was", "were", "be"], answer: 2 },
+    { q: "The containers need _____ before we sail.", options: ["lash", "lashing", "to be lashed", "lashed"], answer: 2 },
+    { q: "By the time we arrive, the tide _____ changed.", options: ["has", "will have", "had", "is"], answer: 1 },
+    { q: "The chief engineer, along with two motormen, _____ inspecting the pump.", options: ["are", "is", "were", "have been"], answer: 1 },
+    { q: "We _____ not sail until the weather improves.", options: ["shall", "has", "are", "is"], answer: 0 },
+    { q: "The bridge _____ contacted the port authority already.", options: ["have", "has", "is", "are"], answer: 1 },
+    { q: "It is essential that every seafarer _____ basic first aid.", options: ["knows", "know", "knowing", "knew"], answer: 1 },
+    { q: "The tanker is _____ large that two tugs are needed.", options: ["such", "very", "so", "too"], answer: 2 },
+    { q: "We must ensure all hatches _____ properly sealed.", options: ["is", "are", "was", "been"], answer: 1 },
+    { q: "The bosun asked who _____ responsible for the mooring lines.", options: ["is", "was", "were", "been"], answer: 1 },
+    { q: "The vessel _____ to drydock next month for repairs.", options: ["goes", "is going", "gone", "went"], answer: 1 },
+    { q: "I wish I _____ more experience with LNG carriers.", options: ["have", "has", "had", "having"], answer: 2 },
+    { q: "Each of the lifeboats _____ inspected monthly.", options: ["are", "is", "were", "have"], answer: 1 },
+    { q: "The OOW reported that visibility _____ rapidly.", options: ["decreases", "was decreasing", "decrease", "decreasing"], answer: 1 },
+    { q: "We _____ better check the bilge levels before the inspection.", options: ["would", "should", "had", "could"], answer: 2 },
+    { q: "The vessel proceeded _____ caution through the strait.", options: ["by", "in", "at", "with"], answer: 3 },
+  ],
+  vocabulary: [
+    { q: "The 'bridge' on a ship refers to:", options: ["A walkway between decks", "The navigation and command centre", "The front of the vessel", "A loading ramp"], answer: 1 },
+    { q: "What does 'abeam' mean?", options: ["Directly ahead", "At right angles to the ship's side", "Directly astern", "On the bow"], answer: 1 },
+    { q: "'Starboard' refers to which side of the vessel?", options: ["Left", "Front", "Right", "Rear"], answer: 2 },
+    { q: "The 'galley' on a ship is the:", options: ["Captain's cabin", "Kitchen", "Engine room", "Navigation room"], answer: 1 },
+    { q: "What is a 'bollard' used for?", options: ["Measuring speed", "Securing mooring lines", "Pumping bilge water", "Steering the vessel"], answer: 1 },
+    { q: "What does 'draught' (draft) of a vessel mean?", options: ["Wind speed on deck", "The depth of water a ship draws", "The height of the mast", "Speed through water"], answer: 1 },
+    { q: "'Leeward' means:", options: ["Towards the wind", "Away from the wind", "Towards the stern", "Towards the bow"], answer: 1 },
+    { q: "A 'bulkhead' is:", options: ["The outer hull plating", "A watertight partition wall", "The ship's rudder", "The anchor chain"], answer: 1 },
+    { q: "What does 'MAYDAY' signify?", options: ["A routine call", "A security alert", "A vessel is in grave and imminent danger", "A request for weather information"], answer: 2 },
+    { q: "The 'forecastle' (fo'c'sle) is located:", options: ["At the stern", "Amidships", "At the bow", "Below the waterline"], answer: 2 },
+    { q: "'Astern' means:", options: ["To the front of the ship", "To the side of the ship", "Behind the ship", "Above the ship"], answer: 2 },
+    { q: "What is a 'fender' used for?", options: ["Protecting the hull from damage when berthing", "Steering the vessel", "Anchoring the ship", "Measuring water depth"], answer: 0 },
+    { q: "The term 'freeboard' refers to:", options: ["Free cargo space", "The distance from waterline to deck edge", "Speed without engine load", "An unobstructed passageway"], answer: 1 },
+    { q: "What does 'PAN PAN' indicate?", options: ["Routine navigational warning", "An urgency message", "Distress — immediate danger", "End of a radio message"], answer: 1 },
+    { q: "A 'hawser' is a type of:", options: ["Pump", "Heavy mooring rope or line", "Navigation chart", "Compass"], answer: 1 },
+  ],
+  listening: [
+    { q: "Captain's announcement: 'All hands report to muster stations. This is not a drill.' What should the crew do?", options: ["Continue working normally", "Proceed to their assigned emergency stations immediately", "Go to the mess room for briefing", "Wait for a second announcement"], answer: 1 },
+    { q: "VHF message: 'Vessel approaching from the south, alter your course to starboard.' What action should you take?", options: ["Turn left", "Turn right", "Maintain course", "Stop the engine"], answer: 1 },
+    { q: "Bridge order: 'Dead slow ahead.' This means:", options: ["Stop the engine", "Full speed ahead", "Move forward at the slowest speed", "Reverse the engine"], answer: 2 },
+    { q: "Announcement: 'Fire in the engine room. Activate CO2 flooding system.' What is happening?", options: ["A routine test", "A fire emergency requiring CO2 suppression", "An engine maintenance procedure", "A ventilation check"], answer: 1 },
+    { q: "Radio message: 'Sécurité, sécurité, sécurité. Navigational hazard reported at position 35°N 024°E.' This is:", options: ["A distress signal", "An urgency message", "A safety warning about a navigational hazard", "A routine position report"], answer: 2 },
+    { q: "Order: 'Let go fore and aft.' The crew should:", options: ["Secure all lines", "Release mooring lines at both bow and stern", "Drop the anchor", "Prepare the gangway"], answer: 1 },
+    { q: "Message: 'Vessel not under command. Keep clear.' This vessel:", options: ["Is requesting a pilot", "Cannot manoeuvre normally and others should avoid it", "Is at anchor", "Is proceeding at full speed"], answer: 1 },
+    { q: "Instruction: 'Heave up the anchor.' The crew should:", options: ["Drop the anchor", "Raise the anchor", "Add more chain", "Secure the anchor to the deck"], answer: 1 },
+    { q: "Report: 'Man overboard, port side!' What is the correct immediate action?", options: ["Stop the ship completely", "Throw a lifebuoy and keep the person in sight", "Continue sailing and report later", "Sound the fire alarm"], answer: 1 },
+    { q: "Order: 'Stand by fore and aft for mooring.' The crew should:", options: ["Start the engines", "Prepare mooring equipment at bow and stern", "Abandon ship", "Close all watertight doors"], answer: 1 },
+    { q: "Broadcast: 'All vessels in the vicinity of position 42°N 012°W, be advised of restricted visibility.' You should:", options: ["Increase speed to clear the area", "Reduce speed and use fog signals", "Change to a southern route", "Ignore if not in that area"], answer: 1 },
+    { q: "Command: 'Hard to port!' The helmsman should:", options: ["Turn the wheel fully to the right", "Turn the wheel fully to the left", "Hold the current course", "Reduce engine speed"], answer: 1 },
+    { q: "Pilot instruction: 'Midships.' This means the helmsman should:", options: ["Turn hard to port", "Turn hard to starboard", "Centre the rudder", "Stop steering"], answer: 2 },
+    { q: "Message: 'ETA pilot station 0800 local.' This means:", options: ["The pilot will depart at 0800", "The vessel expects to arrive at the pilot station at 0800 local time", "The pilot station closes at 0800", "Boarding will take 8 hours"], answer: 1 },
+    { q: "Instruction: 'Rig the pilot ladder on the lee side.' The ladder should be placed:", options: ["On the side facing the wind", "On the side sheltered from the wind", "At the stern", "At the bow"], answer: 1 },
+  ],
+  pronunciation: [
+    { q: "Which word has a different vowel sound from the others?", options: ["port", "short", "word", "north"], answer: 2 },
+    { q: "In which word is the 'ch' pronounced differently?", options: ["anchor", "chart", "channel", "change"], answer: 0 },
+    { q: "Which word is stressed on the SECOND syllable?", options: ["engine", "safety", "report", "cabin"], answer: 2 },
+    { q: "Which word rhymes with 'berth'?", options: ["birth", "breath", "bath", "booth"], answer: 0 },
+    { q: "In which word is the letter 's' pronounced as /z/?", options: ["storm", "this", "mast", "fast"], answer: 1 },
+    { q: "Which pair of words sounds the same (homophones)?", options: ["sea / see", "bow / bow", "wind / wind", "read / read"], answer: 0 },
+    { q: "Which word has a silent letter?", options: ["knot", "flag", "deck", "helm"], answer: 0 },
+    { q: "Where does the stress fall in 'navigation'?", options: ["First syllable", "Second syllable", "Third syllable", "Fourth syllable"], answer: 2 },
+    { q: "Which word has the same 'ow' sound as 'bow' (front of ship)?", options: ["cow", "low", "how", "now"], answer: 1 },
+  ],
+  reading: [
+    {
+      q: "Read the notice: 'ENCLOSED SPACE ENTRY PERMIT REQUIRED. No person shall enter any enclosed space without a valid entry permit signed by the Master or Chief Officer. Atmosphere must be tested before entry. A standby person must be positioned at the entrance at all times.' — Who can sign the entry permit?",
+      options: ["Any officer on board", "The Master or Chief Officer only", "The safety officer", "Any crew member"], answer: 1
+    },
+    {
+      q: "From the notice above: What must happen before anyone enters the enclosed space?",
+      options: ["The space must be painted", "The atmosphere must be tested", "The captain must be present", "The engine must be stopped"], answer: 1
+    },
+    {
+      q: "Safety bulletin: 'ECDIS should not be used as the sole means of navigation. Cross-checking with radar, visual bearings, and paper charts is essential.' — This bulletin recommends:",
+      options: ["Using only ECDIS for navigation", "Replacing ECDIS with paper charts", "Using multiple navigation methods together", "Turning off the radar when using ECDIS"], answer: 2
+    },
+    {
+      q: "Log entry: 'At 1420 LT, vessel reduced speed to 8 knots due to heavy swell from the NW. Barometric pressure falling rapidly. All deck cargo lashings checked and tightened.' — Why did the vessel reduce speed?",
+      options: ["Engine malfunction", "Heavy swell conditions", "Approaching port", "Fuel conservation"], answer: 1
+    },
+    {
+      q: "Notice: 'HOT WORK PERMIT: Welding, burning, or other hot work shall not commence without a valid permit. All combustible materials must be removed or protected within a radius of 10 metres.' — What must be done before starting hot work?",
+      options: ["Inform the port authority", "Remove or protect combustibles within 10 metres and obtain a permit", "Shut down all engines", "Evacuate the vessel"], answer: 1
+    },
+    {
+      q: "Passage plan note: 'Vessel to maintain minimum UKC of 2.0 metres throughout the channel transit. Tidal window: HW ±2 hours.' — UKC stands for Under Keel Clearance. What is the minimum clearance allowed?",
+      options: ["2 hours", "10 metres", "2.0 metres", "0.2 metres"], answer: 2
+    },
+  ],
+  time: [
+    { q: "The vessel departs at 1430. What time is that in 12-hour format?", options: ["4:30 AM", "2:30 PM", "4:30 PM", "2:30 AM"], answer: 1 },
+    { q: "A journey takes 36 hours. If you depart Monday at 1800, when do you arrive?", options: ["Tuesday 0600", "Wednesday 0600", "Tuesday 1800", "Wednesday 0000"], answer: 1 },
+    { q: "The ship's speed is 15 knots. How far will it travel in 4 hours?", options: ["45 nautical miles", "60 nautical miles", "30 nautical miles", "75 nautical miles"], answer: 1 },
+    { q: "What does 0001 hours mean?", options: ["Noon", "One minute past midnight", "One o'clock PM", "Eleven PM"], answer: 1 },
+    { q: "Local time is UTC+3. If UTC is 1200, what is the local time?", options: ["0900", "1500", "1200", "1800"], answer: 1 },
+    { q: "A vessel loaded 2,450 tonnes of cargo. Express this in words:", options: ["Two thousand four hundred and fifty", "Twenty-four hundred fifty", "Two hundred forty-five", "Two thousand and forty-five"], answer: 0 },
+    { q: "ETA is 0730 but you're delayed by 2 hours and 45 minutes. New ETA?", options: ["0945", "1015", "0915", "1045"], answer: 1 },
+    { q: "The vessel's draft is 8.6 metres. What is this approximately in feet? (1 metre ≈ 3.28 feet)", options: ["About 26 feet", "About 28 feet", "About 32 feet", "About 24 feet"], answer: 1 },
+    { q: "High water is at 1135 and low water is at 1748. How long is the tidal cycle between them?", options: ["5 hours 13 minutes", "6 hours 13 minutes", "6 hours 3 minutes", "5 hours 48 minutes"], answer: 1 },
+    { q: "A watch is 4 hours long. The 'first watch' starts at 2000. When does it end?", options: ["2200", "0000", "0400", "0200"], answer: 1 },
+  ],
+};
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildQuiz(mode) {
+  if (mode === "full") {
+    let questions = [];
+    Object.entries(ALL_QUESTIONS).forEach(([cat, qs]) => {
+      qs.forEach((q) => questions.push({ ...q, category: cat }));
+    });
+    return shuffleArray(questions).slice(0, 85);
+  } else {
+    return shuffleArray(ALL_QUESTIONS[mode] || []).map((q) => ({ ...q, category: mode }));
+  }
+}
+
+const catColor = {
+  grammar: "#0A7E8C",
+  vocabulary: "#2E5984",
+  listening: "#8B5E3C",
+  pronunciation: "#6B4C8A",
+  reading: "#3D7A5F",
+  time: "#B8860B",
+};
+
+const catLabel = {
+  grammar: "Grammar",
+  vocabulary: "Vocabulary",
+  listening: "Comprehension",
+  pronunciation: "Pronunciation",
+  reading: "Reading",
+  time: "Time & Numbers",
+};
+
+function MarlinsQuiz() {
+  const [screen, setScreen] = useState("menu");
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [selected, setSelected] = useState(null);
+  const [confirmed, setConfirmed] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [startTime, setStartTime] = useState(null);
+  const [elapsed, setElapsed] = useState(0);
+  const [mode, setMode] = useState(null);
+
+  useEffect(() => {
+    if (screen === "quiz" && startTime) {
+      const iv = setInterval(() => setElapsed(Date.now() - startTime), 1000);
+      return () => clearInterval(iv);
+    }
+  }, [screen, startTime]);
+
+  const startQuiz = useCallback((m) => {
+    const qs = buildQuiz(m);
+    setQuestions(qs);
+    setMode(m);
+    setCurrent(0);
+    setSelected(null);
+    setConfirmed(false);
+    setAnswers(new Array(qs.length).fill(null));
+    setStartTime(Date.now());
+    setElapsed(0);
+    setScreen("quiz");
+  }, []);
+
+  const confirmAnswer = () => {
+    if (selected === null) return;
+    const newAns = [...answers];
+    newAns[current] = selected;
+    setAnswers(newAns);
+    setConfirmed(true);
+  };
+
+  const next = () => {
+    if (current < questions.length - 1) {
+      setCurrent(current + 1);
+      setSelected(answers[current + 1]);
+      setConfirmed(answers[current + 1] !== null);
+    }
+  };
+
+  const prev = () => {
+    if (current > 0) {
+      setCurrent(current - 1);
+      setSelected(answers[current - 1]);
+      setConfirmed(answers[current - 1] !== null);
+    }
+  };
+
+  const finish = () => setScreen("results");
+
+  const formatTime = (ms) => {
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return m + ":" + (sec < 10 ? "0" : "") + sec;
+  };
+
+  const score = answers.reduce((acc, a, i) => (a === (questions[i] && questions[i].answer) ? acc + 1 : acc), 0);
+  const pct = questions.length ? Math.round((score / questions.length) * 100) : 0;
+
+  if (screen === "menu") {
+    return (
+      <div style={S.container}>
+        <div style={S.header}>
+          <div style={S.compass}>⚓</div>
+          <h1 style={S.title}>Marlins English</h1>
+          <h2 style={S.subtitle}>Practice Test</h2>
+          <p style={S.desc}>
+            Prepare for the ICS Marlins English Language Test for Seafarers.
+            Choose a category to focus on, or take a full practice test.
+          </p>
+        </div>
+        <div style={S.grid}>
+          <button style={{...S.card, ...S.cardFull}} onClick={() => startQuiz("full")}
+            onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "none"}>
+            <span style={S.cardIcon}>🧭</span>
+            <span style={S.cardTitle}>Full Practice Test</span>
+            <span style={S.cardSub}>85 questions · ~60 min</span>
+          </button>
+          {CATEGORIES.map((c) => (
+            <button key={c.id} style={{...S.card, borderLeft: "4px solid " + catColor[c.id]}} onClick={() => startQuiz(c.id)}
+              onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "none"}>
+              <span style={S.cardIcon}>{c.icon}</span>
+              <span style={S.cardTitle}>{c.label}</span>
+              <span style={S.cardSub}>{ALL_QUESTIONS[c.id].length} questions</span>
+            </button>
+          ))}
+        </div>
+        <p style={S.footer}>Unofficial practice tool — not affiliated with Marlins or the International Chamber of Shipping.</p>
+      </div>
+    );
+  }
+
+  if (screen === "results") {
+    const byCategory = {};
+    questions.forEach((q, i) => {
+      if (!byCategory[q.category]) byCategory[q.category] = { correct: 0, total: 0 };
+      byCategory[q.category].total++;
+      if (answers[i] === q.answer) byCategory[q.category].correct++;
+    });
+
+    return (
+      <div style={S.container}>
+        <div style={S.resultsBox}>
+          <h2 style={S.resultsTitle}>Test Complete</h2>
+          <div style={S.scoreCircle}>
+            <svg viewBox="0 0 120 120" width="160" height="160">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="#e0e7ed" strokeWidth="8" />
+              <circle
+                cx="60" cy="60" r="52" fill="none"
+                stroke={pct >= 70 ? "#2E8B57" : pct >= 50 ? "#DAA520" : "#C05050"}
+                strokeWidth="8" strokeLinecap="round"
+                strokeDasharray={(pct / 100) * 327 + " 327"}
+                transform="rotate(-90 60 60)"
+              />
+              <text x="60" y="55" textAnchor="middle" style={{fontSize: "28px", fontWeight: 700, fill: "#1a2a3a", fontFamily: "'DM Serif Display', Georgia, serif"}}>{pct}%</text>
+              <text x="60" y="75" textAnchor="middle" style={{fontSize: "13px", fill: "#5a6a7a", fontFamily: "'Lato', sans-serif"}}>{score}/{questions.length}</text>
+            </svg>
+          </div>
+          <p style={{...S.verdict, color: pct >= 70 ? "#2E8B57" : pct >= 50 ? "#DAA520" : "#C05050"}}>
+            {pct >= 70 ? "Good result — likely to pass" : pct >= 50 ? "Borderline — more practice recommended" : "More study needed"}
+          </p>
+          <p style={S.timeResult}>Time: {formatTime(elapsed)}</p>
+
+          <div style={S.breakdownGrid}>
+            {Object.entries(byCategory).map(([cat, data]) => {
+              const p = Math.round((data.correct / data.total) * 100);
+              return (
+                <div key={cat} style={S.breakdownCard}>
+                  <div style={{...S.breakdownBar, background: catColor[cat], width: p + "%"}} />
+                  <span style={S.breakdownLabel}>{catLabel[cat]}</span>
+                  <span style={S.breakdownScore}>{data.correct}/{data.total} ({p}%)</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <h3 style={S.reviewTitle}>Review Incorrect Answers</h3>
+          <div style={S.reviewList}>
+            {questions.map((q, i) => {
+              if (answers[i] === q.answer) return null;
+              return (
+                <div key={i} style={S.reviewItem}>
+                  <div style={S.reviewCat}>
+                    <span style={{...S.reviewBadge, background: catColor[q.category]}}>{catLabel[q.category]}</span>
+                  </div>
+                  <p style={S.reviewQ}>{q.q}</p>
+                  <p style={S.reviewWrong}>Your answer: {answers[i] !== null ? q.options[answers[i]] : "Not answered"}</p>
+                  <p style={S.reviewCorrect}>Correct: {q.options[q.answer]}</p>
+                </div>
+              );
+            })}
+            {questions.every((q, i) => answers[i] === q.answer) && (
+              <p style={{textAlign: "center", color: "#2E8B57", padding: 20}}>Perfect score — no incorrect answers!</p>
+            )}
+          </div>
+
+          <button style={S.btnPrimary} onClick={() => setScreen("menu")}>Back to Menu</button>
+        </div>
+      </div>
+    );
+  }
+
+  // Quiz screen
+  const q = questions[current];
+  const isCorrect = confirmed && selected === q.answer;
+
+  return (
+    <div style={S.container}>
+      <div style={S.quizTop}>
+        <div style={S.quizMeta}>
+          <span style={{...S.catBadge, background: catColor[q.category]}}>{catLabel[q.category]}</span>
+          <span style={S.timer}>{formatTime(elapsed)}</span>
+        </div>
+        <div style={S.progressRow}>
+          <div style={S.progressTrack}>
+            <div style={{...S.progressFill, width: ((current + 1) / questions.length * 100) + "%"}} />
+          </div>
+          <span style={S.progressText}>{current + 1} / {questions.length}</span>
+        </div>
+      </div>
+
+      <div style={S.questionCard}>
+        <p style={S.questionText}>{q.q}</p>
+        <div style={S.optionsGrid}>
+          {q.options.map((opt, i) => {
+            let os = {...S.option};
+            if (confirmed && i === q.answer) os = {...os, ...S.optionCorrect};
+            else if (confirmed && i === selected && i !== q.answer) os = {...os, ...S.optionWrong};
+            else if (!confirmed && i === selected) os = {...os, ...S.optionSelected};
+            return (
+              <button key={i} style={os} onClick={() => { if (!confirmed) setSelected(i); }}>
+                <span style={S.optLetter}>{String.fromCharCode(65 + i)}</span>
+                <span style={S.optText}>{opt}</span>
+              </button>
+            );
+          })}
+        </div>
+        {confirmed && (
+          <div style={{...S.feedback, background: isCorrect ? "#e8f5ec" : "#fdecea", borderColor: isCorrect ? "#2E8B57" : "#C05050"}}>
+            {isCorrect ? "✓ Correct!" : "✗ Incorrect — the correct answer is: " + q.options[q.answer]}
+          </div>
+        )}
+      </div>
+
+      <div style={S.navRow}>
+        <button style={S.btnSecondary} onClick={prev} disabled={current === 0}>← Previous</button>
+        {!confirmed ? (
+          <button style={{...S.btnPrimary, opacity: selected === null ? 0.5 : 1}} onClick={confirmAnswer} disabled={selected === null}>Confirm</button>
+        ) : current < questions.length - 1 ? (
+          <button style={S.btnPrimary} onClick={next}>Next →</button>
+        ) : (
+          <button style={{...S.btnPrimary, background: "#2E8B57"}} onClick={finish}>Finish Test</button>
+        )}
+      </div>
+
+      <div style={S.dotRow}>
+        {questions.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => { setCurrent(i); setSelected(answers[i]); setConfirmed(answers[i] !== null); }}
+            style={{
+              ...S.dot,
+              background: answers[i] !== null
+                ? answers[i] === questions[i].answer ? "#2E8B57" : "#C05050"
+                : i === current ? "#0A7E8C" : "#d0d8e0",
+            }}
+            title={"Question " + (i + 1)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const S = {
+  container: { maxWidth: 720, margin: "0 auto", padding: "20px 16px", minHeight: "100vh" },
+  header: { textAlign: "center", marginBottom: 32 },
+  compass: { fontSize: 48, marginBottom: 8 },
+  title: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 32, margin: 0, letterSpacing: "-0.5px", color: "#0A2540" },
+  subtitle: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 18, fontWeight: 400, color: "#5a6a7a", margin: "4px 0 16px" },
+  desc: { fontSize: 14, color: "#5a6a7a", lineHeight: 1.6, maxWidth: 480, margin: "0 auto" },
+  grid: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 },
+  card: {
+    display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4,
+    padding: "16px 18px", background: "#fff", border: "1px solid #e0e7ed",
+    borderRadius: 10, cursor: "pointer", textAlign: "left",
+    transition: "box-shadow 0.2s, transform 0.15s",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  },
+  cardFull: { gridColumn: "1 / -1", borderLeft: "4px solid #0A2540", background: "#f7fafc" },
+  cardIcon: { fontSize: 22 },
+  cardTitle: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 16, fontWeight: 600 },
+  cardSub: { fontSize: 13, color: "#6a7a8a" },
+  footer: { textAlign: "center", fontSize: 12, color: "#8a9aaa", marginTop: 24 },
+  quizTop: { marginBottom: 20 },
+  quizMeta: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
+  catBadge: { color: "#fff", fontSize: 12, fontWeight: 600, padding: "4px 12px", borderRadius: 20, letterSpacing: "0.3px" },
+  timer: { fontFamily: "'DM Mono', monospace", fontSize: 15, color: "#5a6a7a", fontWeight: 600 },
+  progressRow: { display: "flex", alignItems: "center", gap: 10 },
+  progressTrack: { flex: 1, height: 6, background: "#e0e7ed", borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: "100%", background: "#0A7E8C", borderRadius: 3, transition: "width 0.3s" },
+  progressText: { fontSize: 13, color: "#6a7a8a", fontWeight: 600, minWidth: 50, textAlign: "right" },
+  questionCard: { background: "#fff", border: "1px solid #e0e7ed", borderRadius: 12, padding: "24px 20px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" },
+  questionText: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 17, lineHeight: 1.5, marginBottom: 20, color: "#0A2540" },
+  optionsGrid: { display: "flex", flexDirection: "column", gap: 10 },
+  option: {
+    display: "flex", alignItems: "center", gap: 12,
+    padding: "14px 16px", border: "2px solid #e0e7ed", borderRadius: 10,
+    background: "#fafcfe", cursor: "pointer", transition: "all 0.15s",
+    textAlign: "left", fontSize: 15, lineHeight: 1.4,
+  },
+  optionSelected: { borderColor: "#0A7E8C", background: "#eef7f8" },
+  optionCorrect: { borderColor: "#2E8B57", background: "#e8f5ec" },
+  optionWrong: { borderColor: "#C05050", background: "#fdecea" },
+  optLetter: {
+    width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center",
+    borderRadius: "50%", background: "#e8edf2", fontWeight: 700, fontSize: 13, flexShrink: 0, color: "#3a4a5a",
+  },
+  optText: { flex: 1 },
+  feedback: { marginTop: 16, padding: "12px 16px", borderRadius: 8, borderLeft: "4px solid", fontSize: 14, fontWeight: 600 },
+  navRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, gap: 12 },
+  btnPrimary: {
+    padding: "12px 28px", background: "#0A7E8C", color: "#fff", border: "none",
+    borderRadius: 8, fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "opacity 0.2s",
+  },
+  btnSecondary: {
+    padding: "12px 28px", background: "transparent", color: "#5a6a7a",
+    border: "2px solid #d0d8e0", borderRadius: 8, fontWeight: 600, fontSize: 15, cursor: "pointer",
+  },
+  dotRow: { display: "flex", flexWrap: "wrap", gap: 5, justifyContent: "center", marginTop: 20 },
+  dot: { width: 10, height: 10, borderRadius: "50%", border: "none", cursor: "pointer", padding: 0, transition: "background 0.2s" },
+  resultsBox: { textAlign: "center" },
+  resultsTitle: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 28, color: "#0A2540" },
+  scoreCircle: { margin: "20px auto" },
+  verdict: { fontSize: 18, fontWeight: 700, margin: "8px 0" },
+  timeResult: { fontSize: 14, color: "#6a7a8a", marginBottom: 24 },
+  breakdownGrid: { display: "flex", flexDirection: "column", gap: 8, maxWidth: 420, margin: "0 auto 24px", textAlign: "left" },
+  breakdownCard: { position: "relative", background: "#f7fafc", borderRadius: 8, padding: "12px 14px", overflow: "hidden", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  breakdownBar: { position: "absolute", top: 0, left: 0, bottom: 0, opacity: 0.12, borderRadius: 8 },
+  breakdownLabel: { fontSize: 14, fontWeight: 600, zIndex: 1 },
+  breakdownScore: { fontSize: 13, color: "#5a6a7a", zIndex: 1 },
+  reviewTitle: { fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 20, margin: "24px 0 12px", color: "#0A2540" },
+  reviewList: { textAlign: "left", maxWidth: 560, margin: "0 auto" },
+  reviewItem: { background: "#fff", border: "1px solid #e8edf2", borderRadius: 10, padding: 16, marginBottom: 12 },
+  reviewCat: { marginBottom: 6 },
+  reviewBadge: { color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 12 },
+  reviewQ: { fontSize: 14, lineHeight: 1.5, marginBottom: 8, fontWeight: 600 },
+  reviewWrong: { fontSize: 13, color: "#C05050", margin: "2px 0" },
+  reviewCorrect: { fontSize: 13, color: "#2E8B57", fontWeight: 600, margin: "2px 0" },
+};
+
+ReactDOM.render(<MarlinsQuiz />, document.getElementById("root"));
+</script>
+</body>
+</html>
